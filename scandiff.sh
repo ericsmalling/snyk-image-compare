@@ -56,17 +56,23 @@ low_two=$(echo $summary_two | jq -r '.low')
 # set C1WIDTH to the length of the longest image name
 C1WIDTH=$(echo -e "${NAME_ONE}\n${NAME_TWO}" | awk '{ print length }' | sort -nr | head -n1)
 
-printf 
-printf "%${C1WIDTH}s\n" "Comparing ${NAME_ONE} to ${NAME_TWO}..."
+printf "%${C1WIDTH}s\n\n" "Comparing ${NAME_ONE} to ${NAME_TWO}..."
 
 printf "${UNDERLINE}%${C1WIDTH}s : ${BOLD}${COLOR_PURPLE}%6s ${COLOR_RED}%6s ${COLOR_YELLOW}%6s ${COLOR_WHITE}%6s ${COLOR_RESET}${UNDERLINE}: %6s${COLOR_RESET}\n" "Image" "Crit" "High" "Med" "Low" "TTL"
 printf "%${C1WIDTH}s : ${BOLD}${COLOR_PURPLE}%6d ${COLOR_RED}%6d ${COLOR_YELLOW}%6d ${COLOR_WHITE}%6d ${COLOR_RESET}: %6d\n" "$NAME_ONE" $critical_one $high_one $medium_one $low_one $ttl_one
 printf "%${C1WIDTH}s : ${BOLD}${COLOR_PURPLE}%6d ${COLOR_RED}%6d ${COLOR_YELLOW}%6d ${COLOR_WHITE}%6d ${COLOR_RESET}: %6d\n" "$NAME_TWO" $critical_two $high_two $medium_two $low_two $ttl_two
 echo "${COLOR_WHITE}$(printf "%${C1WIDTH}s" "diff") :${COLOR_RESET} $(formatDifference $critical_one $critical_two) ${COLOR_RED}$(formatDifference $high_one $high_two) ${COLOR_YELLOW}$(formatDifference $medium_one $medium_two) ${COLOR_WHITE}$(formatDifference $low_one $low_two) ${COLOR_RESET}${COLOR_WHITE}:${COLOR_RESET} $(formatDifference $ttl_one $ttl_two)"
-echo "${BOLD}${NAME_TWO/ (cached)/}${COLOR_RESET} uses the base image: ${BOLD}$(echo $JSON_TWO | jq -r '.docker.baseImage')${COLOR_RESET}", consider changing that to one of the following:
 echo
 
-echo "$JSON_TWO" | jq -r '.docker.baseImageRemediation.advice[].message'
+BASE_IMAGE=$(echo $JSON_TWO | jq -r '.docker.baseImage')
+if [ "$BASE_IMAGE" != "null" ]; then
+  echo "${BOLD}${NAME_TWO/ (cached)/}${COLOR_RESET} uses the base image: ${BOLD}$BASE_IMAGE${COLOR_RESET}", consider changing that to one of the following:
+  echo
+
+  echo "$JSON_TWO" | jq -r '.docker.baseImageRemediation.advice[].message'
+else
+  echo "Base image for ${BOLD}${NAME_TWO/ (cached)/}${COLOR_RESET} unknown, no remediation advice available."
+fi
 
 
 # "docker": {
