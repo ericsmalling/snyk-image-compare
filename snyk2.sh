@@ -12,13 +12,16 @@ fi
 
 mkdir -p .snyk2
 
+echo "Purging old cache files..."
+find .snyk2 -type f -mmin +240 -exec rm {} \;
+
 #get image ID for IMAGE_NAME_ONE
 IMAGE_ID_ONE=$(docker image inspect $IMAGE_NAME_ONE --format='{{json .Id}}')
 IMAGE_ID_TWO=$(docker image inspect $IMAGE_NAME_TWO --format='{{json .Id}}')
 
 # remove the leading "sha256:" from the ID
-IMAGE_ID_ONE=${IMAGE_ID_ONE:7}
-IMAGE_ID_TWO=${IMAGE_ID_TWO:7}
+IMAGE_ID_ONE=${IMAGE_ID_ONE:8}
+IMAGE_ID_TWO=${IMAGE_ID_TWO:8}
 
 #if IMAGE_ID_ONE is not empty, check .snyk2 for a file with the ID name
 if [ ! -z "$IMAGE_ID_ONE" ]; then
